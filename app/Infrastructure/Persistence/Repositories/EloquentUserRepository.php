@@ -2,6 +2,9 @@
 
 namespace App\Infrastructure\Persistence\Repositories;
 
+use App\Domain\Shared\Pagination\DefaultPagination;
+use App\Domain\Shared\Pagination\Pagination;
+use App\Domain\Shared\Pagination\SearchQuery;
 use App\Domain\User\Entities\User;
 use App\Domain\User\Repositories\UserRepositoryInterface;
 use App\Domain\User\ValueObjects\Email;
@@ -37,6 +40,33 @@ class EloquentUserRepository implements UserRepositoryInterface
         $models = UserModel::all();
 
         return $models->map(fn (UserModel $model) => $this->toEntity($model))->toArray();
+    }
+
+    public function findAll(SearchQuery $query): Pagination
+    {
+        $paginator = UserModel::query()
+            ->when($query->name !== null && $query->name !== '', function ($builder) use ($query) {
+                $builder->where('name', 'like', '%' . $query->name . '%');
+            })
+            ->when($query->email !== null && $query->email !== '', function ($builder) use ($query) {
+                $builder->where('email', 'like', '%' . $query->email . '%');
+            })
+            ->orderBy('id')
+            ->paginate(
+                perPage: $query->perPage,
+                columns: ['*'],
+                pageName: 'page',
+                page: $query->page,
+            );
+
+        return new DefaultPagination(
+            items: $paginator->items() === []
+                ? []
+                : array_map(fn (UserModel $model) => $this->toEntity($model), $paginator->items()),
+            total: $paginator->total(),
+            perPage: $paginator->perPage(),
+            currentPage: $paginator->currentPage(),
+        );
     }
 
     private function toEntity(UserModel $model): User

@@ -2,11 +2,12 @@
 
 namespace App\Interfaces\Http\Controllers;
 
+use App\Application\User\UseCases\ListUsersUseCase;
 use App\Application\User\DTOs\RegisterUserInputDTO;
-use App\Application\User\DTOs\RegisterUserOutputDTO;
 use App\Application\User\UseCases\RegisterUserUseCase;
+use App\Domain\Shared\Pagination\SearchQuery;
 use App\Domain\User\Exceptions\DuplicateEmailException;
-use App\Domain\User\Repositories\UserRepositoryInterface;
+use App\Interfaces\Http\Requests\ListUsersRequest;
 use App\Interfaces\Http\Requests\RegisterUserRequest;
 use App\Interfaces\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
@@ -16,22 +17,31 @@ class UserController extends Controller
 {
     public function __construct(
         private readonly RegisterUserUseCase $registerUserUseCase,
-        private readonly UserRepositoryInterface $userRepository,
+        private readonly ListUsersUseCase $listUsersUseCase,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(ListUsersRequest $request): JsonResponse
     {
-        $users = $this->userRepository->getAll();
+        $pagination = $this->listUsersUseCase->execute(new SearchQuery(
+            page: (int) $request->input('page', 1),
+            perPage: (int) $request->input('per_page', 15),
+            name: $request->input('name'),
+            email: $request->input('email'),
+        ));
 
-        $data = array_map(fn($user) => new RegisterUserOutputDTO(
-            id: $user->getId(),
-            name: $user->getName(),
-            email: $user->getEmail()->getValue(),
-            role: $user->getRole(),
-        ), $users);
+        $data = array_map(
+            fn ($item) => (new UserResource($item))->toArray($request),
+            $pagination->items(),
+        );
 
         return response()->json([
-            'data' => UserResource::collection($data),
+            'data' => $data,
+            'meta' => [
+                'total' => $pagination->total(),
+                'per_page' => $pagination->perPage(),
+                'current_page' => $pagination->currentPage(),
+                'last_page' => $pagination->lastPage(),
+            ],
         ]);
     }
 

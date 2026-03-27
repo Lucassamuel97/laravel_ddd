@@ -10,6 +10,63 @@ class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_can_list_users_with_pagination(): void
+    {
+        UserModel::create([
+            'name'     => 'John Doe',
+            'email'    => 'john@example.com',
+            'password' => bcrypt('secret123'),
+            'role'     => 'user',
+        ]);
+
+        UserModel::create([
+            'name'     => 'Jane Doe',
+            'email'    => 'jane@example.com',
+            'password' => bcrypt('secret123'),
+            'role'     => 'admin',
+        ]);
+
+        $response = $this->getJson('/api/users?per_page=1&page=1');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    ['id', 'name', 'email', 'role'],
+                ],
+                'meta' => ['total', 'per_page', 'current_page', 'last_page'],
+            ])
+            ->assertJsonPath('meta.total', 2)
+            ->assertJsonPath('meta.per_page', 1)
+            ->assertJsonPath('meta.current_page', 1)
+            ->assertJsonPath('meta.last_page', 2);
+    }
+
+    public function test_can_filter_users_by_name_and_email(): void
+    {
+        UserModel::create([
+            'name'     => 'John Doe',
+            'email'    => 'john@example.com',
+            'password' => bcrypt('secret123'),
+            'role'     => 'user',
+        ]);
+
+        UserModel::create([
+            'name'     => 'Jane Doe',
+            'email'    => 'jane@example.com',
+            'password' => bcrypt('secret123'),
+            'role'     => 'user',
+        ]);
+
+        $response = $this->getJson('/api/users?name=john&email=john@example.com');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'John Doe')
+            ->assertJsonPath('data.0.email', 'john@example.com')
+            ->assertJsonPath('meta.total', 1);
+    }
+
     public function test_can_register_user_successfully(): void
     {
         $response = $this->postJson('/api/users', [
