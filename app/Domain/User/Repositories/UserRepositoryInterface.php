@@ -9,4 +9,9 @@ interface UserRepositoryInterface
     public function create(User $user): User;
 
     public function findByEmail(string $email): ?User;
+
+    /**
+     * @return array<User>
+     */
+    public function getAll(): array;
 }

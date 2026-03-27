@@ -29,6 +29,16 @@ class EloquentUserRepository implements UserRepositoryInterface
         return $model ? $this->toEntity($model) : null;
     }
 
+    /**
+     * @return array<User>
+     */
+    public function getAll(): array
+    {
+        $models = UserModel::all();
+
+        return $models->map(fn (UserModel $model) => $this->toEntity($model))->toArray();
+    }
+
     private function toEntity(UserModel $model): User
     {
         return new User(

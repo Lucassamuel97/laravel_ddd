@@ -23,7 +23,13 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-d
 
 RUN cp .env.example .env && php artisan key:generate
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Set permissions for storage and bootstrap directories with proper user
+RUN chown -R www-data:www-data /var/www && \
+    chmod -R 755 /var/www && \
+    chmod -R 775 /var/www/storage && \
+    chmod -R 775 /var/www/bootstrap/cache
+
+USER www-data
 
 EXPOSE 9000
 
