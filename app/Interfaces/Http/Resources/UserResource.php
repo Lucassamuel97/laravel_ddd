@@ -2,6 +2,7 @@
 
 namespace App\Interfaces\Http\Resources;
 
+use App\Application\User\DTOs\GetUserByIdOutputDTO;
 use App\Application\User\DTOs\ListUserOutputDTO;
 use App\Application\User\DTOs\RegisterUserOutputDTO;
 use Illuminate\Http\Request;
@@ -9,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
 {
-    public function __construct(private readonly RegisterUserOutputDTO|ListUserOutputDTO $dto)
+    public function __construct(private readonly RegisterUserOutputDTO|ListUserOutputDTO|GetUserByIdOutputDTO $dto)
     {
         parent::__construct($dto);
     }
