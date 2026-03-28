@@ -25,6 +25,13 @@ class EloquentUserRepository implements UserRepositoryInterface
         return $this->toEntity($model);
     }
 
+    public function findById(string $id): ?User
+    {
+        $model = UserModel::query()->find($id);
+
+        return $model ? $this->toEntity($model) : null;
+    }
+
     public function findByEmail(string $email): ?User
     {
         $model = UserModel::where('email', strtolower($email))->first();
