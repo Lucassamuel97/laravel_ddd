@@ -1,0 +1,1 @@
+- Rodar testes via Docker: docker compose exec app php artisan test (host tem PHP 8.1 e o projeto exige >=8.3).
