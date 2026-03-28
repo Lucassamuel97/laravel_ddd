@@ -10,6 +10,40 @@ class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_can_get_user_by_id(): void
+    {
+        // Arrange
+        $user = UserModel::create([
+            'name'     => 'John Doe',
+            'email'    => 'john@example.com',
+            'password' => bcrypt('secret123'),
+            'role'     => 'user',
+        ]);
+
+        // Act
+        $response = $this->getJson('/api/users/' . $user->id);
+
+        // Assert
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => ['id', 'name', 'email', 'role'],
+            ])
+            ->assertJsonPath('data.id', (string) $user->id)
+            ->assertJsonPath('data.name', 'John Doe')
+            ->assertJsonPath('data.email', 'john@example.com')
+            ->assertJsonPath('data.role', 'user');
+    }
+
+    public function test_returns_404_when_get_user_by_id_and_user_does_not_exist(): void
+    {
+        // Act
+        $response = $this->getJson('/api/users/999');
+
+        // Assert
+        $response->assertStatus(404)
+            ->assertJsonPath('message', 'User with id 999 was not found.');
+    }
+
     public function test_can_list_users_with_pagination(): void
     {
         UserModel::create([

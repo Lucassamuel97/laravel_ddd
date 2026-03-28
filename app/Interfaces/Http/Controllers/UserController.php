@@ -2,11 +2,13 @@
 
 namespace App\Interfaces\Http\Controllers;
 
+use App\Application\User\UseCases\GetUserByIdUseCase;
 use App\Application\User\UseCases\ListUsersUseCase;
 use App\Application\User\DTOs\RegisterUserInputDTO;
 use App\Application\User\UseCases\RegisterUserUseCase;
 use App\Domain\Shared\Pagination\SearchQuery;
 use App\Domain\User\Exceptions\DuplicateEmailException;
+use App\Domain\User\Exceptions\UserNotFoundException;
 use App\Interfaces\Http\Requests\ListUsersRequest;
 use App\Interfaces\Http\Requests\RegisterUserRequest;
 use App\Interfaces\Http\Resources\UserResource;
@@ -18,6 +20,7 @@ class UserController extends Controller
     public function __construct(
         private readonly RegisterUserUseCase $registerUserUseCase,
         private readonly ListUsersUseCase $listUsersUseCase,
+        private readonly GetUserByIdUseCase $getUserByIdUseCase,
     ) {}
 
     public function index(ListUsersRequest $request): JsonResponse
@@ -60,6 +63,17 @@ class UserController extends Controller
             return (new UserResource($output))->response()->setStatusCode(201);
         } catch (DuplicateEmailException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function show(string $id): JsonResponse
+    {
+        try {
+            $output = $this->getUserByIdUseCase->execute($id);
+
+            return (new UserResource($output))->response();
+        } catch (UserNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
         }
     }
 }
