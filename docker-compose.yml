@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile
     container_name: laravel_ddd_app
     restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /tmp
+      COMPOSER_HOME: /tmp/.composer
     working_dir: /var/www
     volumes:
       - .:/var/www
