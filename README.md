@@ -1,6 +1,6 @@
 # Laravel DDD — RESTful API Template
 
-Template de API RESTful construído com **Laravel 11**, **PHP 8.3+**, **MySQL** e **Docker**, seguindo rigorosamente os princípios de **Domain-Driven Design (DDD)**, **Clean Architecture** e **Test-Driven Development (TDD)**.
+Template de API RESTful construído com **Laravel 13**, **PHP 8.3+**, **MySQL** e **Docker**, seguindo rigorosamente os princípios de **Domain-Driven Design (DDD)**, **Clean Architecture** e **Test-Driven Development (TDD)**.
 
 ---
 
