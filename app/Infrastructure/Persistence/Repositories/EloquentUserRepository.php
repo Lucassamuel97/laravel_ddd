@@ -25,6 +25,20 @@ class EloquentUserRepository implements UserRepositoryInterface
         return $this->toEntity($model);
     }
 
+    public function update(User $user): User
+    {
+        $model = UserModel::query()->findOrFail($user->getId());
+
+        $model->update([
+            'name' => $user->getName(),
+            'email' => $user->getEmail()->getValue(),
+            'password' => $user->getPassword()->getHash(),
+            'role' => $user->getRole(),
+        ]);
+
+        return $this->toEntity($model->refresh());
+    }
+
     public function findById(string $id): ?User
     {
         $model = UserModel::query()->find($id);
@@ -39,9 +53,6 @@ class EloquentUserRepository implements UserRepositoryInterface
         return $model ? $this->toEntity($model) : null;
     }
 
-    /**
-     * @return array<User>
-     */
     public function getAll(): array
     {
         $models = UserModel::all();

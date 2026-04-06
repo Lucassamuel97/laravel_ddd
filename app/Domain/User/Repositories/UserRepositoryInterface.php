@@ -10,6 +10,8 @@ interface UserRepositoryInterface
 {
     public function create(User $user): User;
 
+    public function update(User $user): User;
+
     public function findById(string $id): ?User;
 
     public function findByEmail(string $email): ?User;
