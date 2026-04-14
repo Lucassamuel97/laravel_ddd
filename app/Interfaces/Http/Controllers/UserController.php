@@ -32,20 +32,16 @@ class UserController extends Controller
             email: $validated['email'] ?? null,
         ));
 
-        $data = array_map(
-            fn ($item) => (new UserResource($item))->toArray($request),
-            $pagination->items(),
-        );
-
-        return response()->json([
-            'data' => $data,
+        return UserResource::collection($pagination->items())
+            ->additional([
             'meta' => [
                 'total' => $pagination->total(),
                 'per_page' => $pagination->perPage(),
                 'current_page' => $pagination->currentPage(),
                 'last_page' => $pagination->lastPage(),
             ],
-        ]);
+            ])
+            ->response();
     }
 
     public function store(RegisterUserRequest $request): JsonResponse
