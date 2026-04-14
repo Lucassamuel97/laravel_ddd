@@ -23,11 +23,13 @@ class UserController extends Controller
 
     public function index(ListUsersRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
         $pagination = $this->listUsersUseCase->execute(new SearchQuery(
-            page: (int) $request->input('page', 1),
-            perPage: (int) $request->input('per_page', 15),
-            name: $request->input('name'),
-            email: $request->input('email'),
+            page: (int) ($validated['page'] ?? 1),
+            perPage: (int) ($validated['per_page'] ?? 15),
+            name: $validated['name'] ?? null,
+            email: $validated['email'] ?? null,
         ));
 
         $data = array_map(
