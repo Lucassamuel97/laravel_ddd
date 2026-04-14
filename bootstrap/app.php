@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (ValidationException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => $exception->errors(),
@@ -25,12 +29,20 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (DuplicateEmailException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
             return response()->json([
                 'message' => $exception->getMessage(),
             ], 422);
         });
 
         $exceptions->render(function (UserNotFoundException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
             return response()->json([
                 'message' => $exception->getMessage(),
             ], 404);
