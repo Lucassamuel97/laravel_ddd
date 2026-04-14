@@ -17,34 +17,46 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (ValidationException $exception, Request $request) {
+        $apiError = static function (string $message, int $status, array $errors = []) {
+            return response()->json([
+                'message' => $message,
+                'errors' => $errors,
+            ], $status);
+        };
+
+        $exceptions->render(function (ValidationException $exception, Request $request) use ($apiError) {
             if (! $request->is('api/*')) {
                 return null;
             }
 
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $exception->errors(),
-            ], 422);
+            return $apiError(
+                'The given data was invalid.',
+                422,
+                $exception->errors(),
+            );
         });
 
-        $exceptions->render(function (DuplicateEmailException $exception, Request $request) {
+        $exceptions->render(function (DuplicateEmailException $exception, Request $request) use ($apiError) {
             if (! $request->is('api/*')) {
                 return null;
             }
 
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
+            return $apiError(
+                $exception->getMessage(),
+                422,
+                ['email' => [$exception->getMessage()]],
+            );
         });
 
-        $exceptions->render(function (UserNotFoundException $exception, Request $request) {
+        $exceptions->render(function (UserNotFoundException $exception, Request $request) use ($apiError) {
             if (! $request->is('api/*')) {
                 return null;
             }
 
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 404);
+            return $apiError(
+                $exception->getMessage(),
+                404,
+                ['id' => [$exception->getMessage()]],
+            );
         });
     })->create();
