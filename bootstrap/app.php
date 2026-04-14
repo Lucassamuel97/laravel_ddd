@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\User\Exceptions\DuplicateEmailException;
+use App\Domain\User\Exceptions\UserNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,5 +22,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'The given data was invalid.',
                 'errors' => $exception->errors(),
             ], 422);
+        });
+
+        $exceptions->render(function (DuplicateEmailException $exception, Request $request) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        });
+
+        $exceptions->render(function (UserNotFoundException $exception, Request $request) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 404);
         });
     })->create();

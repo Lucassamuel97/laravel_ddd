@@ -7,8 +7,6 @@ use App\Application\User\UseCases\ListUsersUseCase;
 use App\Application\User\DTOs\RegisterUserInputDTO;
 use App\Application\User\UseCases\RegisterUserUseCase;
 use App\Domain\Shared\Pagination\SearchQuery;
-use App\Domain\User\Exceptions\DuplicateEmailException;
-use App\Domain\User\Exceptions\UserNotFoundException;
 use App\Interfaces\Http\Requests\ListUsersRequest;
 use App\Interfaces\Http\Requests\RegisterUserRequest;
 use App\Interfaces\Http\Resources\UserResource;
@@ -50,30 +48,24 @@ class UserController extends Controller
 
     public function store(RegisterUserRequest $request): JsonResponse
     {
-        try {
-            $dto = new RegisterUserInputDTO(
-                name: $request->input('name'),
-                email: $request->input('email'),
-                password: $request->input('password'),
-                role: $request->input('role', 'user'),
-            );
+        $validated = $request->validated();
 
-            $output = $this->registerUserUseCase->execute($dto);
+        $dto = new RegisterUserInputDTO(
+            name: $validated['name'],
+            email: $validated['email'],
+            password: $validated['password'],
+            role: $validated['role'] ?? 'user',
+        );
 
-            return (new UserResource($output))->response()->setStatusCode(201);
-        } catch (DuplicateEmailException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
-        }
+        $output = $this->registerUserUseCase->execute($dto);
+
+        return (new UserResource($output))->response()->setStatusCode(201);
     }
 
     public function show(string $id): JsonResponse
     {
-        try {
-            $output = $this->getUserByIdUseCase->execute($id);
+        $output = $this->getUserByIdUseCase->execute($id);
 
-            return (new UserResource($output))->response();
-        } catch (UserNotFoundException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
-        }
+        return (new UserResource($output))->response();
     }
 }
